@@ -1,2 +1,0 @@
-# flasky
-A simple project
