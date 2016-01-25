@@ -17,5 +17,15 @@ def user(name=None):
     return render_template('user.html', name=name)
 
 
+@app.errorhandler(404)
+def handle_404():
+    return render_template('404.html')
+
+
+@app.errorhandler(500)
+def handle_500():
+    return render_template('500.html')
+
+
 if __name__ == '__main__':
     app.run(debug=True)
