@@ -1,7 +1,7 @@
 import datetime
 import hashlib
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, session, redirect, url_for, flash
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
 from flask.ext.wtf import Form
@@ -24,12 +24,18 @@ def index():
     form = NameForm()
     if form.validate_on_submit():
         name = form.name.data
+        old_name = session.get('name')
+        if old_name is not None and old_name != name:
+            flash('Look like you have changed you name!')
+        session['name'] = name
         form.name.data = ''
+        # post redirect to get pattern
+        return redirect(url_for('index'))
     return render_template('index.html',
                            user_agent=user_agent,
                            current_time=datetime.datetime.utcnow(),
                            form=form,
-                           name=name)
+                           name=session.get('name'))
 
 
 @app.route('/user/')
