@@ -4,3 +4,5 @@ Flask-Bootstrap==3.3.5.7
 Flask-Moment==0.5.1
 Flask-WTF==0.12
 WTForms==2.1
+Flask-SQLAlchemy==2.1
+SQLAlchemy==1.0.11
