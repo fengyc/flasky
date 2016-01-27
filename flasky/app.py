@@ -10,13 +10,14 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask.ext.sqlalchemy import SQLAlchemy
 
-basedir = os.path.abspath(os.path.pardir(__name__))
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = hashlib.sha256('TOP_SECRET'.encode()).hexdigest()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 bootstrap = Bootstrap(app)
 moment = Moment(app)
@@ -52,10 +53,9 @@ def init_db():
     user_john = User(username='john', role=admin_role)
     user_susan = User(username='susan', role=user_role)
     user_david = User(username='david', role=user_role)
-    db.session.addall([admin_role, mod_role, user_role, user_john, user_susan,
+    db.session.add_all([admin_role, mod_role, user_role, user_john, user_susan,
                        user_david])
     db.session.commit()
-
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -65,18 +65,26 @@ def index():
     form = NameForm()
     if form.validate_on_submit():
         name = form.name.data
-        old_name = session.get('name')
-        if old_name is not None and old_name != name:
-            flash('Look like you have changed you name!')
+        user = User.query.filter_by(username = name).first()
+        if user is None:
+            user = User(username=name)
+            db.session.add(user)
+            db.session.commit()
+            session['known'] = False
+        else:
+            session['known'] = True
+        oldname = session.get('name')
+        if oldname is not None and oldname != name:
+            flash('Look like you have changed your name!')
         session['name'] = name
         form.name.data = ''
-        # post redirect to get pattern
-        return redirect(url_for('index'))
+        return redirect(url_for('index'))   # post redirect to get pattern
     return render_template('index.html',
                            user_agent=user_agent,
                            current_time=datetime.datetime.utcnow(),
                            form=form,
-                           name=session.get('name'))
+                           name=session.get('name'),
+                           known=session.get('known', False))
 
 
 @app.route('/user/')
