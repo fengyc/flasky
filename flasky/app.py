@@ -70,9 +70,11 @@ def init_db():
                        user_david])
     db.session.commit()
 
+
 def async_send_mail(app, msg):
     with app.app_context:
         mail.send(msg)
+
 
 def send_mail(to, subject, template, **kwargs):
     msg = Message(subject=app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject,
