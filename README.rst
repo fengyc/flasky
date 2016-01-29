@@ -23,3 +23,13 @@ flasky
 
     python -m flasky.manage db migrate -m '<更新消息>'
     python -m flasky.manage db upgrade
+
+
+关于邮箱的 smtp 的设置
+----------------------------
+
+在环境变量中设置 smtp 参数，windows 上 ::
+
+    set MAIL_USERNAME=<邮箱用户名>
+    set MAIL_PASSWORD=<邮箱口令>
+    set FLASKY_ADMIN=<管理员邮箱>

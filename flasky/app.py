@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import os
+import threading
 
 from flask import Flask, request, render_template, session, redirect, url_for, flash
 from flask.ext.bootstrap import Bootstrap
@@ -9,6 +10,7 @@ from flask.ext.wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.mail import Mail, Message
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -19,9 +21,20 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
+# email
+app.config['MAIL_SERVER'] = 'smtp.ym.163.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['FLASKY_ADMIN'] = os.environ.get('FLASKY_ADMIN')
+app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
+app.config['FLASKY_MAIL_SENDER'] = os.environ.get('MAIL_SENDER') or os.environ.get('MAIL_USERNAME')
+
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 db = SQLAlchemy(app)
+mail = Mail(app)
 
 
 class Role(db.Model):
@@ -57,6 +70,21 @@ def init_db():
                        user_david])
     db.session.commit()
 
+def async_send_mail(app, msg):
+    with app.app_context:
+        mail.send(msg)
+
+def send_mail(to, subject, template, **kwargs):
+    msg = Message(subject=app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject,
+                  sender=app.config['FLASKY_MAIL_SENDER'],
+                  recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    # mail.send(msg)
+    thread = threading.Thread(target=async_send_mail, args=[app, msg])
+    thread.start()
+    return thread
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -71,6 +99,8 @@ def index():
             db.session.add(user)
             db.session.commit()
             session['known'] = False
+            if app.config['FLASKY_ADMIN']:
+                send_mail(app.config['FLASKY_ADMIN'], 'New User', 'mail/new_user', user=user)
         else:
             session['known'] = True
         oldname = session.get('name')

@@ -1,0 +1,3 @@
+Good news!
+
+A new user {{user.username}} had visited our website!
