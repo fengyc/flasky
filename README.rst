@@ -33,3 +33,10 @@ flasky
     set MAIL_USERNAME=<邮箱用户名>
     set MAIL_PASSWORD=<邮箱口令>
     set FLASKY_ADMIN=<管理员邮箱>
+
+默认的邮箱服务器为 smtp.ym.163.com ，可在命令行中修改邮箱服务器 ::
+
+    set MAIL_SERVER=<邮箱服务器>
+    set MAIL_PORT=<服务器端口>
+    set MAIL_USE_SSL=True
+
