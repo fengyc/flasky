@@ -45,3 +45,12 @@ def index():
 @main.route('/user/<string:name>')
 def user(name=None):
     return render_template('user.html', name=name)
+
+
+from flask.ext.login import login_required
+
+
+@main.route('/secret')
+@login_required
+def secret():
+    return 'Only authenticated users are allowd!'
