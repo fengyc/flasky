@@ -68,4 +68,4 @@ target/
 .idea/
 
 # sqlite db
-/*.sqlite
+*.sqlite

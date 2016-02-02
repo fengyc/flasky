@@ -28,4 +28,24 @@ class RegistrationForm(Form):
             raise ValidationError('Username already registered.')
 
 
+class ChangePasswordForm(Form):
+    password = PasswordField('Original password', validators=[DataRequired()])
+    new_password = PasswordField('New password', validators=[DataRequired(), EqualTo('new_password2', message='Password must match')])
+    new_password2 = PasswordField('Confirm password', validators=[DataRequired()])
+    submit = SubmitField('Update')
 
+
+class PasswordResetRequestForm(Form):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64), Email()])
+    submit = SubmitField('Reset Password')
+
+
+class PasswordResetForm(Form):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 64), Email()])
+    password = PasswordField('New Password', validators=[DataRequired(), EqualTo('new_password2', message='Password must match')])
+    password2 = PasswordField('Confirm password', validators=[DataRequired()])
+    submit = SubmitField('Reset Password')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first() is None:
+            raise ValidationError('Unknown email address.')
